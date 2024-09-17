@@ -20,7 +20,7 @@ pub enum Opcode {
 }
 impl Opcode {
     pub fn takes_parameter(self) -> bool {
-        matches!(self, Opcode::Push | Opcode::Goto)
+        matches!(self, Opcode::Push)
     }
 }
 
@@ -69,6 +69,13 @@ impl TryInto<Opcode> for &str {
             "MUL" => Mul,
             "DIV" => Div,
             "HALT" => Halt,
+            "DUP" => Dup,
+            "SWAP" => Swap,
+            "MOD" => Mod,
+            "MLOAD" => MemLoad,
+            "MSTORE" => MemStore,
+            "GOTONZ" => GotoNz,
+            "EQ" => Eq,
             _ => return Err(format!("Unknown Opcode {}", self)),
         })
     }

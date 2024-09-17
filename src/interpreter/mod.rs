@@ -1,4 +1,4 @@
-use crate::opcode::{self, Opcode};
+use crate::opcode::Opcode;
 
 const STACK_SIZE: usize = 64;
 const TMP_MEMORY_SIZE: usize = 1024;
@@ -108,9 +108,8 @@ impl Interpreter {
                     self.push(v)?
                 }
                 Opcode::Goto => {
-                    let v = self.read_parameter()?;
-
-                    self.goto(v)?
+                    let addr = self.pop()?;
+                    self.goto(addr)?
                 }
                 Opcode::Pop => {
                     self.pop()?;
