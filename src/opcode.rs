@@ -17,6 +17,9 @@ pub enum Opcode {
     /// Goto if not equal to zero
     GotoNz = 13,
     Eq = 14,
+    Lt = 15,
+    Gt = 16,
+    Debug = 255,
 }
 impl Opcode {
     pub fn takes_parameter(self) -> bool {
@@ -50,6 +53,9 @@ impl TryInto<Opcode> for u8 {
             12 => MemStore,
             13 => GotoNz,
             14 => Eq,
+            15 => Lt,
+            16 => Gt,
+            255 => Debug,
             _ => return Err(format!("Unknown Opcode {}", self)),
         })
     }
@@ -76,6 +82,9 @@ impl TryInto<Opcode> for &str {
             "MSTORE" => MemStore,
             "GOTONZ" => GotoNz,
             "EQ" => Eq,
+            "LT" => Lt,
+            "GT" => Gt,
+            "DEBUG" => Debug,
             _ => return Err(format!("Unknown Opcode {}", self)),
         })
     }

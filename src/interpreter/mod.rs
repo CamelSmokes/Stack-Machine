@@ -61,7 +61,6 @@ impl Interpreter {
         if self.stack_length > 0 {
             let val = self.stack[self.stack_length - 1];
             self.stack[self.stack_length - 1] = 0;
-            println!("Popped {val} at {}", self.stack_length);
             self.stack_length -= 1;
 
             Ok(val)
@@ -126,6 +125,13 @@ impl Interpreter {
                 Opcode::MemStore => self.mem_store()?,
                 Opcode::GotoNz => self.goto_nz()?,
                 Opcode::Eq => self.eq()?,
+                Opcode::Lt => self.lt()?,
+                Opcode::Gt => self.gt()?,
+                Opcode::Debug => {
+                    let v = self.pop()?;
+                    println!("{v}");
+                    self.push(v)?;
+                }
             }
         } else {
             return Ok(InterpreterEvent::ProgramEnd);
@@ -227,6 +233,20 @@ impl Interpreter {
         let a = self.pop()?;
         let b = self.pop()?;
         let c = if a == b { 1 } else { 0 };
+        self.push(c)?;
+        Ok(())
+    }
+    fn lt(&mut self) -> Result<(), InterpreterError> {
+        let a = self.pop()?;
+        let b = self.pop()?;
+        let c = if a < b { 1 } else { 0 };
+        self.push(c)?;
+        Ok(())
+    }
+    fn gt(&mut self) -> Result<(), InterpreterError> {
+        let a = self.pop()?;
+        let b = self.pop()?;
+        let c = if a > b { 1 } else { 0 };
         self.push(c)?;
         Ok(())
     }
