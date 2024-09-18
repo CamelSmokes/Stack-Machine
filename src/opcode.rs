@@ -19,9 +19,21 @@ pub enum Opcode {
     Eq = 14,
     Lt = 15,
     Gt = 16,
+    Swap2 = 17,
+    Dup2 = 18,
+    Not = 19,
+    Dup3 = 20,
+    Dup4 = 21,
+    NoOp = 128,
+
+    // Debugging instructions
+    DbgSilent = 253,
+    /// Print top of stack to debug stdout
     Debug = 255,
+    /// Print top of stack as ASCII code to stdout
     DebugChar = 254,
 }
+
 impl Opcode {
     pub fn takes_parameter(self) -> bool {
         matches!(self, Opcode::Push)
@@ -56,8 +68,15 @@ impl TryInto<Opcode> for u8 {
             14 => Eq,
             15 => Lt,
             16 => Gt,
-            255 => Debug,
+            17 => Swap2,
+            18 => Dup2,
+            19 => Not,
+            20 => Dup3,
+            21 => Dup4,
+            128 => NoOp,
+            253 => DbgSilent,
             254 => DebugChar,
+            255 => Debug,
             _ => return Err(format!("Unknown Opcode {}", self)),
         })
     }
@@ -78,7 +97,11 @@ impl TryInto<Opcode> for &str {
             "DIV" => Div,
             "HALT" => Halt,
             "DUP" => Dup,
+            "DUP2" => Dup2,
+            "DUP3" => Dup3,
+            "DUP4" => Dup4,
             "SWAP" => Swap,
+            "SWAP2" => Swap2,
             "MOD" => Mod,
             "MLOAD" => MemLoad,
             "MSTORE" => MemStore,
@@ -86,6 +109,8 @@ impl TryInto<Opcode> for &str {
             "EQ" => Eq,
             "LT" => Lt,
             "GT" => Gt,
+            "NOT" => Not,
+            "NOOP" => NoOp,
             "DEBUG" => Debug,
             "DEBUGCHAR" => DebugChar,
             _ => return Err(format!("Unknown Opcode {}", self)),

@@ -1,0 +1,145 @@
+PUSH :main
+GOTO
+
+
+
+
+
+:is_prime
+// Stack precondition [..., Check Value]
+PUSH 0
+MLOAD // Get length of primes list
+PUSH 1 // Primes list index
+:is_prime_loop
+// Stack [..., Check Value, Prime List Length, Prime List Index]
+DUP2
+DUP2
+// Stack [..., Check Value, Prime List Length, Prime List Index, Prime List Length, Prime List Index]
+LT
+PUSH 0
+EQ 
+// If the prime list index is greater than or equal to the prime list length, end loop.
+// Stack [..., Check Value, Prime List Length, Prime List Index]
+PUSH :is_prime_return_true
+GOTONZ
+// Get value at primes list index
+DUP
+MLOAD
+// Stack [..., Check Value, Prime list Length, Prime list Index, Prime Value]
+DUP4
+// Stack [...,Check Value, Prime list length, Prime list Index, Prime Value, Check Value]
+DUP2
+DUP2
+// Stack [...,Check Value, Prime list length, Prime list Index, Prime Value, Check Value, Prime Value, Check Value]
+SWAP
+LT
+PUSH 0
+EQ
+PUSH :is_prime_return_true
+GOTONZ // If Prime is greater than or equal to check value return true
+/// Stack [...,Check Value, Prime list length,Prime list Index, Prime Value, Check Value]
+MOD // get remainder when Check Value is divided by a prime
+// Stack [...,Check Value, Prime list length, Prime list Index, Remainder]
+PUSH 0
+EQ // If Check Value is divisible by Prime Value
+PUSH :is_prime_return_false
+GOTONZ
+// Stack [..., Check Value, Prime list Length, Prime list Index]
+PUSH 1
+ADD // Increment index
+PUSH :is_prime_loop
+GOTO
+HALT
+
+
+
+
+
+:is_prime_return_false
+// Stack precondition [..., Check Value, Prime List Length, Prime List Index]
+POP
+POP
+POP
+PUSH 0
+PUSH :is_prime_return
+GOTO
+
+
+:is_prime_return_true
+// Stack precondition [..., Check Value, Prime List Length, Prime List Index]
+POP
+POP
+POP
+PUSH 1
+PUSH :is_prime_return
+GOTO
+
+
+
+
+
+
+
+:main
+PUSH 1 // Primes list length
+PUSH 0 // Memory offset
+MSTORE
+PUSH 2 // First prime in primes list
+PUSH 1 // Primes list first index
+MSTORE
+PUSH 3 // Check value
+:check_loop
+// Stack [ Check Value ]
+PUSH 0 
+MLOAD // Get prime list length
+// Stack [ Check Value, Prime List Length]
+PUSH 5000
+LT
+PUSH :end
+GOTONZ // If prime list length is greater than 5000, end program.
+// Stack [ Check Value ]
+DUP
+PUSH :is_prime
+GOTO
+:is_prime_return
+// Stack [ Check Value, Is Prime? ]
+PUSH :check_loop_is_prime
+GOTONZ
+PUSH :check_loop_not_prime
+GOTO
+
+
+
+
+:check_loop_is_prime
+// Stack [ Check Value ]
+PUSH 0
+MLOAD // Get prime list length
+// Stack [ Check Value, Prime list length ]
+PUSH 1
+ADD
+DUP
+// Stack [ Check Value, Prime list length, Prime List length ]
+PUSH 0
+MSTORE // Increment prime list length
+// Stack [ Check Value, Prime list length ]
+DUP2
+SWAP
+// Stack [ Check Value, Check Value,  Prime list length +1 ]
+MSTORE
+// Stack [ Check Value ]
+PUSH 2
+ADD
+PUSH :check_loop
+GOTO
+
+:check_loop_not_prime
+// Stack [ Check Value ]
+PUSH 2
+ADD // Increment Check Value by 2
+PUSH :check_loop
+GOTO
+
+:end
+print Finished
+HALT

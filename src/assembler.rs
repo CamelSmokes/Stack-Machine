@@ -17,17 +17,26 @@ pub fn assemble_string_to_bytes(input: &str) -> Vec<u8> {
         if line.starts_with(':') {
             goto_label_destination_location.insert(line.to_owned(), bytecode.len());
             continue;
+        } else if line.starts_with("//") {
+            continue;
         } else if line.starts_with("print") {
             let (a, rest) = line.split_once(' ').unwrap();
             assert_eq!(a, "print");
+            bytecode.push(Opcode::Push.into());
+            bytecode.extend_from_slice(&u64::to_le_bytes(1));
+            bytecode.push(Opcode::DbgSilent.into());
             for char in rest.bytes() {
                 bytecode.push(Opcode::Push.into());
-                bytecode.extend_from_slice(&u64::to_be_bytes(char as u64));
+                bytecode.extend_from_slice(&u64::to_le_bytes(char as u64));
                 bytecode.push(Opcode::DebugChar.into());
             }
             bytecode.push(Opcode::Push.into());
-            bytecode.extend_from_slice(&u64::to_be_bytes('\n' as u64));
+            bytecode.extend_from_slice(&u64::to_le_bytes('\n' as u64));
             bytecode.push(Opcode::DebugChar.into());
+            bytecode.push(Opcode::Push.into());
+            bytecode.extend_from_slice(&u64::to_le_bytes(0));
+            bytecode.push(Opcode::DbgSilent.into());
+
             continue;
         }
 
@@ -37,22 +46,34 @@ pub fn assemble_string_to_bytes(input: &str) -> Vec<u8> {
         let opcode: Opcode = mnemonic.try_into().unwrap();
         let byte: u8 = opcode.into();
 
-        bytecode.push(byte);
         if opcode == Opcode::Push {
+            // while (bytecode.len() + 1) % 8 != 0 {
+            //     bytecode.push(Opcode::NoOp.into());
+            // }
+            bytecode.push(byte);
+
             let param_str = line_iter.next().unwrap_or_else(|| {
                 panic!("Operation {mnemonic} requires parameter at line no {line_no}")
             });
             if let Ok(param) = param_str.parse::<u64>() {
-                bytecode.extend_from_slice(&param.to_be_bytes());
+                bytecode.extend_from_slice(&param.to_le_bytes());
             } else if param_str.starts_with(':') {
-                goto_labels_usage.push((param_str.to_owned(), bytecode.len()));
+                goto_labels_usage.push((param_str.trim().to_owned(), bytecode.len()));
                 // Placeholder
-                bytecode.extend_from_slice(&u64::to_be_bytes(0xDEADBEEF));
+                bytecode.extend_from_slice(&u64::to_le_bytes(0xDEADBEEF));
             } else {
                 panic!("Could not parse parameter \"{param_str}\" to u64 or goto label at line no {line_no}.")
             }
+        } else {
+            bytecode.push(byte);
+        }
+        if let Some(v) = line_iter.next() {
+            if !v.starts_with("//") {
+                panic!("Found extra junk {v} at line {line_no} after instruction")
+            }
         }
     }
+
     // replace goto label placeholders
     for (label_name, location) in goto_labels_usage {
         let destination_location = goto_label_destination_location
@@ -60,7 +81,7 @@ pub fn assemble_string_to_bytes(input: &str) -> Vec<u8> {
             .cloned()
             .unwrap_or_else(|| panic!("Use of undeclared goto label: \"{}\"", label_name));
         bytecode[location..location + 8]
-            .copy_from_slice(&u64::to_be_bytes(destination_location as u64));
+            .copy_from_slice(&u64::to_le_bytes(destination_location as u64));
     }
     bytecode
 }
