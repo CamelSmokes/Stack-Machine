@@ -1,7 +1,7 @@
 use crate::opcode::Opcode;
 
 const STACK_SIZE: usize = 64;
-const TMP_MEMORY_SIZE: usize = 1024;
+const TMP_MEMORY_SIZE: usize = 8192;
 
 #[derive(Debug)]
 pub enum InterpreterEvent {
@@ -48,6 +48,7 @@ impl Interpreter {
     pub fn debug_get_stack(&self) -> &[u64] {
         &self.stack
     }
+    #[inline]
     fn push(&mut self, value: u64) -> Result<(), InterpreterError> {
         if self.stack_length < STACK_SIZE {
             self.stack[self.stack_length] = value;
@@ -57,6 +58,7 @@ impl Interpreter {
             Err(InterpreterError::StackOverflow)
         }
     }
+    #[inline]
     fn pop(&mut self) -> Result<u64, InterpreterError> {
         if self.stack_length > 0 {
             let val = self.stack[self.stack_length - 1];
@@ -132,6 +134,11 @@ impl Interpreter {
                     println!("{v}");
                     self.push(v)?;
                 }
+                Opcode::DebugChar => {
+                    let v = self.pop()?;
+                    let v: char = char::from_u32((v as u8) as u32).unwrap();
+                    print!("{}", v);
+                }
             }
         } else {
             return Ok(InterpreterEvent::ProgramEnd);
@@ -151,6 +158,7 @@ impl Interpreter {
             Err(InterpreterError::InvalidGoto)
         }
     }
+    #[inline]
     fn add(&mut self) -> Result<(), InterpreterError> {
         let a = self.pop()?;
         let b = self.pop()?;
@@ -158,6 +166,7 @@ impl Interpreter {
         self.push(c)?;
         Ok(())
     }
+    #[inline]
     fn sub(&mut self) -> Result<(), InterpreterError> {
         let a = self.pop()?;
         let b = self.pop()?;
@@ -165,6 +174,7 @@ impl Interpreter {
         self.push(c)?;
         Ok(())
     }
+    #[inline]
     fn mul(&mut self) -> Result<(), InterpreterError> {
         let a = self.pop()?;
         let b = self.pop()?;
@@ -172,6 +182,7 @@ impl Interpreter {
         self.push(c)?;
         Ok(())
     }
+    #[inline]
     fn div(&mut self) -> Result<(), InterpreterError> {
         let a = self.pop()?;
         let b = self.pop()?;
@@ -182,15 +193,18 @@ impl Interpreter {
         self.push(c)?;
         Ok(())
     }
+    #[inline]
     fn halt(&self) -> Result<InterpreterEvent, InterpreterError> {
         Ok(InterpreterEvent::ProgramEnd)
     }
+    #[inline]
     fn dup(&mut self) -> Result<(), InterpreterError> {
         let v = self.pop()?;
         self.push(v)?;
         self.push(v)?;
         Ok(())
     }
+    #[inline]
     fn swap(&mut self) -> Result<(), InterpreterError> {
         let a = self.pop()?;
         let b = self.pop()?;
@@ -198,6 +212,7 @@ impl Interpreter {
         self.push(b)?;
         Ok(())
     }
+    #[inline]
     fn rem(&mut self) -> Result<(), InterpreterError> {
         let a = self.pop()?;
         let b = self.pop()?;
@@ -208,12 +223,14 @@ impl Interpreter {
         self.push(c)?;
         Ok(())
     }
+    #[inline]
     fn mem_load(&mut self) -> Result<(), InterpreterError> {
         let index = self.pop()?;
         let val = self.load_memory_offset(index)?;
         self.push(val)?;
         Ok(())
     }
+    #[inline]
     fn mem_store(&mut self) -> Result<(), InterpreterError> {
         let index = self.pop()?;
         let val = self.pop()?;
@@ -221,6 +238,7 @@ impl Interpreter {
         Ok(())
     }
 
+    #[inline]
     fn goto_nz(&mut self) -> Result<(), InterpreterError> {
         let addr = self.pop()?;
         let conditional = self.pop()?;
@@ -229,6 +247,7 @@ impl Interpreter {
         }
         Ok(())
     }
+    #[inline]
     fn eq(&mut self) -> Result<(), InterpreterError> {
         let a = self.pop()?;
         let b = self.pop()?;
@@ -236,6 +255,7 @@ impl Interpreter {
         self.push(c)?;
         Ok(())
     }
+    #[inline]
     fn lt(&mut self) -> Result<(), InterpreterError> {
         let a = self.pop()?;
         let b = self.pop()?;
@@ -243,6 +263,7 @@ impl Interpreter {
         self.push(c)?;
         Ok(())
     }
+    #[inline]
     fn gt(&mut self) -> Result<(), InterpreterError> {
         let a = self.pop()?;
         let b = self.pop()?;

@@ -10,15 +10,30 @@ pub fn assemble_string_to_bytes(input: &str) -> Vec<u8> {
     for (line_no, line) in input.lines().enumerate() {
         let mut line_iter = line.split_whitespace();
 
-        let mnemonic = line_iter
-            .next()
-            .unwrap_or_else(|| panic!("Empty line at line no {line_no}"));
-
+        if line.trim().is_empty() {
+            continue;
+        }
         // Parse loop label
         if line.starts_with(':') {
             goto_label_destination_location.insert(line.to_owned(), bytecode.len());
             continue;
+        } else if line.starts_with("print") {
+            let (a, rest) = line.split_once(' ').unwrap();
+            assert_eq!(a, "print");
+            for char in rest.bytes() {
+                bytecode.push(Opcode::Push.into());
+                bytecode.extend_from_slice(&u64::to_be_bytes(char as u64));
+                bytecode.push(Opcode::DebugChar.into());
+            }
+            bytecode.push(Opcode::Push.into());
+            bytecode.extend_from_slice(&u64::to_be_bytes('\n' as u64));
+            bytecode.push(Opcode::DebugChar.into());
+            continue;
         }
+
+        let mnemonic = line_iter
+            .next()
+            .unwrap_or_else(|| panic!("Empty line at line no {line_no}"));
         let opcode: Opcode = mnemonic.try_into().unwrap();
         let byte: u8 = opcode.into();
 
@@ -47,7 +62,6 @@ pub fn assemble_string_to_bytes(input: &str) -> Vec<u8> {
         bytecode[location..location + 8]
             .copy_from_slice(&u64::to_be_bytes(destination_location as u64));
     }
-
     bytecode
 }
 

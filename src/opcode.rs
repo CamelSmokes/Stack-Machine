@@ -20,6 +20,7 @@ pub enum Opcode {
     Lt = 15,
     Gt = 16,
     Debug = 255,
+    DebugChar = 254,
 }
 impl Opcode {
     pub fn takes_parameter(self) -> bool {
@@ -56,6 +57,7 @@ impl TryInto<Opcode> for u8 {
             15 => Lt,
             16 => Gt,
             255 => Debug,
+            254 => DebugChar,
             _ => return Err(format!("Unknown Opcode {}", self)),
         })
     }
@@ -85,6 +87,7 @@ impl TryInto<Opcode> for &str {
             "LT" => Lt,
             "GT" => Gt,
             "DEBUG" => Debug,
+            "DEBUGCHAR" => DebugChar,
             _ => return Err(format!("Unknown Opcode {}", self)),
         })
     }
