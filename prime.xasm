@@ -118,4 +118,21 @@ ADD // Increment Check Value by 2
 GOTO :check_loop
 
 :end
+// Print all primes
+PUSH 0 // [i]
+:print_loop
+PUSH 1
+ADD
+DUP // [i, i]
+PUSH 5000 // [i,i,10]
+GT //[i, 10 > i]
+SWAP //[10 > i, i]
+DUP // [10 > i, i, i]
+
+MLOAD // [10 > i, i, v]
+DEBUG
+POP
+SWAP
+GOTONZ :print_loop
+
 HALT

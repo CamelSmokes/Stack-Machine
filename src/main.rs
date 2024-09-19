@@ -46,7 +46,7 @@ fn main() {
                 }
             }
             let duration = start_time.elapsed().as_millis();
-            println!("Memory {:?}", interpreter.debug_get_memory());
+            // println!("Memory {:?}", interpreter.debug_get_memory());
             println!("Took {duration}ms");
         }
         _ => panic!("Unknown mode {}", mode),
