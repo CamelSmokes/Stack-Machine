@@ -24,6 +24,10 @@ pub enum Opcode {
     Not = 19,
     Dup3 = 20,
     Dup4 = 21,
+
+    Push0 = 32,
+    Push1 = 33,
+
     NoOp = 128,
 
     // Debugging instructions
@@ -34,23 +38,15 @@ pub enum Opcode {
     DebugChar = 254,
 }
 
-impl Opcode {
-    pub fn takes_parameter(self) -> bool {
-        matches!(self, Opcode::Push)
-    }
-}
-
 impl From<Opcode> for u8 {
     fn from(val: Opcode) -> Self {
         val as u8
     }
 }
-impl TryInto<Opcode> for u8 {
-    type Error = String;
-
-    fn try_into(self) -> Result<Opcode, Self::Error> {
+impl Opcode {
+    pub fn from_byte(input: u8) -> Option<Opcode> {
         use Opcode::*;
-        Ok(match self {
+        Some(match input {
             0 => Push,
             1 => Pop,
             2 => Add,
@@ -73,11 +69,15 @@ impl TryInto<Opcode> for u8 {
             19 => Not,
             20 => Dup3,
             21 => Dup4,
+
+            32 => Push0,
+            33 => Push1,
+
             128 => NoOp,
             253 => DbgSilent,
             254 => DebugChar,
             255 => Debug,
-            _ => return Err(format!("Unknown Opcode {}", self)),
+            _ => return None,
         })
     }
 }
@@ -89,6 +89,8 @@ impl TryInto<Opcode> for &str {
         use Opcode::*;
         Ok(match self {
             "PUSH" => Push,
+            "PUSH0" => Push0,
+            "PUSH1" => Push1,
             "POP" => Pop,
             "GOTO" => Goto,
             "ADD" => Add,

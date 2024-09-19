@@ -44,36 +44,50 @@ pub fn assemble_string_to_bytes(input: &str) -> Vec<u8> {
             .next()
             .unwrap_or_else(|| panic!("Empty line at line no {line_no}"));
         let opcode: Opcode = mnemonic.try_into().unwrap();
-        let byte: u8 = opcode.into();
+        match opcode {
+            Opcode::Push => {
+                // while (bytecode.len() + 1) % 8 != 0 {
+                //     bytecode.push(Opcode::NoOp.into());
+                // }
 
-        if opcode == Opcode::Push {
-            // while (bytecode.len() + 1) % 8 != 0 {
-            //     bytecode.push(Opcode::NoOp.into());
-            // }
-            bytecode.push(byte);
+                let param_str = line_iter.next().unwrap_or_else(|| {
+                    panic!("Operation {mnemonic} requires parameter at line no {line_no}")
+                });
+                if let Ok(param) = param_str.parse::<u64>() {
+                    // Determine which push instruction to use
+                    if param == 0 {
+                        bytecode.push(Opcode::Push0.into());
+                    } else if param < 256 {
+                        let byte = param as u8;
+                        bytecode.push(Opcode::Push1.into());
+                        bytecode.push(byte);
+                    } else {
+                        bytecode.push(Opcode::Push.into());
 
-            let param_str = line_iter.next().unwrap_or_else(|| {
-                panic!("Operation {mnemonic} requires parameter at line no {line_no}")
-            });
-            if let Ok(param) = param_str.parse::<u64>() {
-                bytecode.extend_from_slice(&param.to_le_bytes());
-            } else if param_str.starts_with(':') {
-                goto_labels_usage.push((param_str.trim().to_owned(), bytecode.len()));
-                // Placeholder
-                bytecode.extend_from_slice(&u64::to_le_bytes(0xDEADBEEF));
-            } else {
-                panic!("Could not parse parameter \"{param_str}\" to u64 or goto label at line no {line_no}.")
+                        bytecode.extend_from_slice(&param.to_le_bytes());
+                    }
+                } else if param_str.starts_with(':') {
+                    bytecode.push(Opcode::Push.into());
+                    goto_labels_usage.push((param_str.trim().to_owned(), bytecode.len()));
+                    // Placeholder
+                    bytecode.extend_from_slice(&u64::to_le_bytes(0xDEADBEEFDEADBEEF));
+                } else {
+                    panic!("Could not parse parameter \"{param_str}\" to u64 or goto label at line no {line_no}.")
+                }
             }
-        } else {
-            bytecode.push(byte);
+            Opcode::Push1 => {
+                panic!("Found push1. Use push instead it handles this");
+            }
+            _ => bytecode.push(opcode.into()),
         }
+
         if let Some(v) = line_iter.next() {
             if !v.starts_with("//") {
                 panic!("Found extra junk {v} at line {line_no} after instruction")
             }
         }
     }
-
+    println!("{:?}", bytecode);
     // replace goto label placeholders
     for (label_name, location) in goto_labels_usage {
         let destination_location = goto_label_destination_location

@@ -4,15 +4,20 @@ pub fn parse_bytes_to_instructions(bytes: &[u8]) -> Vec<u8> {
     let mut iter = bytes.iter().cloned();
     // Validate input is proper.
     while let Some(next) = iter.next() {
-        let opcode: Opcode = next.try_into().expect("Unknown Opcode");
-        if opcode.takes_parameter() {
-            let mut buffer = [0, 0, 0, 0, 0, 0, 0, 0];
-            for item in buffer.iter_mut() {
-                *item = iter
-                    .next()
-                    .expect("Ran out of bytes while reading parameter.");
-            }
+        let opcode: Opcode = Opcode::from_byte(next).expect("Unknown Opcode");
+        if opcode == Opcode::Push {
+            iter.next().unwrap();
+            iter.next().unwrap();
+            iter.next().unwrap();
+            iter.next().unwrap();
+            iter.next().unwrap();
+            iter.next().unwrap();
+            iter.next().unwrap();
+            iter.next().unwrap();
         };
+        if opcode == Opcode::Push1 {
+            iter.next().unwrap();
+        }
     }
 
     bytes.to_owned()
