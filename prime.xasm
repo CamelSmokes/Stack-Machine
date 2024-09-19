@@ -86,7 +86,7 @@ PUSH 3 // Check value
 PUSH 0 
 MLOAD // Get prime list length
 // Stack [ Check Value, Prime List Length]
-PUSH 1999
+PUSH 4999
 LT
 GOTONZ :end // If prime list length is greater than 5000, end program.
 // Stack [ Check Value ]
