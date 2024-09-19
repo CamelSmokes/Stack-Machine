@@ -1,24 +1,44 @@
 use crate::opcode::Opcode;
 
-pub fn parse_bytes_to_instructions(bytes: &[u8]) -> Vec<u8> {
+#[derive(Debug)]
+pub enum ParseError {
+    PushParameterReachedEnd,
+    NeverHalts,
+}
+
+pub fn parse_bytes_to_instructions(bytes: &[u8]) -> Result<Vec<u8>, ParseError> {
+    // Ensure input is valid
     let mut iter = bytes.iter().cloned();
-    // Validate input is proper.
     while let Some(next) = iter.next() {
-        let opcode: Opcode = Opcode::from_byte(next).expect("Unknown Opcode");
-        if opcode == Opcode::Push {
-            iter.next().unwrap();
-            iter.next().unwrap();
-            iter.next().unwrap();
-            iter.next().unwrap();
-            iter.next().unwrap();
-            iter.next().unwrap();
-            iter.next().unwrap();
-            iter.next().unwrap();
-        };
-        if opcode == Opcode::Push1 {
-            iter.next().unwrap();
+        let opcode: Opcode = Opcode::from_byte(next).expect("Unknown Opcode while parsing");
+        match opcode {
+            Opcode::Push8 => {
+                for _ in 0..8 {
+                    iter.next().ok_or(ParseError::PushParameterReachedEnd)?;
+                }
+            }
+            Opcode::Push1 => {
+                iter.next().ok_or(ParseError::PushParameterReachedEnd)?;
+            }
+            Opcode::Push2 => {
+                for _ in 0..2 {
+                    iter.next().ok_or(ParseError::PushParameterReachedEnd)?;
+                }
+            }
+            Opcode::Push3 | Opcode::Push4 | Opcode::Push5 | Opcode::Push6 | Opcode::Push7 => {
+                todo!()
+            }
+            _ => (),
         }
     }
 
-    bytes.to_owned()
+    if let Some(v) = bytes.last() {
+        if *v != Opcode::Halt.into() {
+            return Err(ParseError::PushParameterReachedEnd);
+        }
+    } else {
+        return Err(ParseError::PushParameterReachedEnd);
+    }
+
+    Ok(bytes.to_owned())
 }

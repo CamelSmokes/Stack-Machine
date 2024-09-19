@@ -9,5 +9,5 @@ edition = "2021"
 criterion = "0.3"
 
 [[bench]]
-name = "5000_primes"
+name = "2000_primes"
 harness = false

@@ -5,7 +5,6 @@ pub type Instruction = fn(&mut Interpreter) -> Result<InterpreterEvent, Interpre
 pub type InstructionTable = [Instruction; 256];
 pub fn get_instruction_table() -> InstructionTable {
     let mut table: [Instruction; 256] = [noop as Instruction; 256];
-    table[0] = push;
     table[1] = pop;
     table[2] = add;
     table[3] = sub;
@@ -27,8 +26,12 @@ pub fn get_instruction_table() -> InstructionTable {
     table[19] = not;
     table[20] = dup3;
     table[21] = dup4;
+    table[22] = noop;
     table[32] = push0;
     table[33] = push1;
+    table[34] = push2;
+    table[40] = push8;
+
     table[128] = noop;
 
     table[253] = debug_silent;
@@ -66,14 +69,19 @@ fn push1(i: &mut Interpreter) -> Result<InterpreterEvent, InterpreterError> {
     i.push(v)?;
     Ok(InterpreterEvent::Nothing)
 }
+fn push2(i: &mut Interpreter) -> Result<InterpreterEvent, InterpreterError> {
+    let v = i.read_parameter_2byte()?;
+    i.push(v)?;
+    Ok(InterpreterEvent::Nothing)
+}
 
-pub fn push(i: &mut Interpreter) -> Result<InterpreterEvent, InterpreterError> {
+pub fn push8(i: &mut Interpreter) -> Result<InterpreterEvent, InterpreterError> {
     let v = i.read_parameter()?;
     i.push(v)?;
     Ok(InterpreterEvent::Nothing)
 }
 
-pub fn noop(i: &mut Interpreter) -> Result<InterpreterEvent, InterpreterError> {
+pub fn noop(_: &mut Interpreter) -> Result<InterpreterEvent, InterpreterError> {
     Ok(InterpreterEvent::Nothing)
 }
 

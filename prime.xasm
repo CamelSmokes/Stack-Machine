@@ -1,5 +1,4 @@
-PUSH :main
-GOTO
+GOTO :main
 
 
 
@@ -20,8 +19,7 @@ PUSH 0
 EQ 
 // If the prime list index is greater than or equal to the prime list length, end loop.
 // Stack [..., Check Value, Prime List Length, Prime List Index]
-PUSH :is_prime_return_true
-GOTONZ
+GOTONZ :is_prime_return_true
 // Get value at primes list index
 DUP
 MLOAD
@@ -35,20 +33,16 @@ SWAP
 LT
 PUSH 0
 EQ
-PUSH :is_prime_return_true
-GOTONZ // If Prime is greater than or equal to check value return true
+GOTONZ :is_prime_return_true // If Prime is greater than or equal to check value return true
 /// Stack [...,Check Value, Prime list length,Prime list Index, Prime Value, Check Value]
 MOD // get remainder when Check Value is divided by a prime
 // Stack [...,Check Value, Prime list length, Prime list Index, Remainder]
 PUSH 0
 EQ // If Check Value is divisible by Prime Value
-PUSH :is_prime_return_false
-GOTONZ
+GOTONZ :is_prime_return_false
 // Stack [..., Check Value, Prime list Length, Prime list Index]
-PUSH 1
-ADD // Increment index
-PUSH :is_prime_loop
-GOTO
+INC
+GOTO :is_prime_loop
 HALT
 
 
@@ -61,8 +55,8 @@ POP
 POP
 POP
 PUSH 0
-PUSH :is_prime_return
-GOTO
+
+GOTO :is_prime_return
 
 
 :is_prime_return_true
@@ -71,8 +65,7 @@ POP
 POP
 POP
 PUSH 1
-PUSH :is_prime_return
-GOTO
+GOTO :is_prime_return
 
 
 
@@ -93,20 +86,16 @@ PUSH 3 // Check value
 PUSH 0 
 MLOAD // Get prime list length
 // Stack [ Check Value, Prime List Length]
-PUSH 4999
+PUSH 1999
 LT
-PUSH :end
-GOTONZ // If prime list length is greater than 5000, end program.
+GOTONZ :end // If prime list length is greater than 5000, end program.
 // Stack [ Check Value ]
 DUP
-PUSH :is_prime
-GOTO
+GOTO :is_prime
 :is_prime_return
 // Stack [ Check Value, Is Prime? ]
-PUSH :check_loop_is_prime
-GOTONZ
-PUSH :check_loop_not_prime
-GOTO
+GOTONZ :check_loop_is_prime
+GOTO :check_loop_not_prime
 
 
 
@@ -116,8 +105,7 @@ GOTO
 PUSH 0
 MLOAD // Get prime list length
 // Stack [ Check Value, Prime list length ]
-PUSH 1
-ADD
+INC
 DUP
 // Stack [ Check Value, Prime list length, Prime List length ]
 PUSH 0
@@ -130,16 +118,13 @@ MSTORE
 // Stack [ Check Value ]
 PUSH 2
 ADD
-PUSH :check_loop
-GOTO
+GOTO :check_loop
 
 :check_loop_not_prime
 // Stack [ Check Value ]
 PUSH 2
 ADD // Increment Check Value by 2
-PUSH :check_loop
-GOTO
+GOTO :check_loop
 
 :end
-print Finished
 HALT

@@ -3,6 +3,8 @@ use std::io::Read;
 
 use instruction::{get_instruction_table, InstructionTable};
 
+use crate::opcode::Opcode;
+
 const STACK_SIZE: usize = 64;
 const TMP_MEMORY_SIZE: usize = 8192;
 
@@ -81,6 +83,11 @@ impl Interpreter {
     }
     fn goto(&mut self, addr: u64) -> Result<(), InterpreterError> {
         let addr = addr as usize;
+        if let Some(b) = self.program.get(addr) {
+            if *b != Opcode::GotoTarget.into() {
+                return Err(InterpreterError::InvalidGoto);
+            }
+        }
         if addr < self.program.len() {
             self.program_counter = addr;
             Ok(())
@@ -186,6 +193,15 @@ impl Interpreter {
         let byte = self.next_byte().unwrap();
         let val = u8::from_le_bytes([byte]);
         Ok(val as u64)
+    }
+    fn read_parameter_2byte(&mut self) -> Result<u64, InterpreterError> {
+        let mut buffer: [u8; 2] = [0; 2];
+        (&self.program[self.program_counter..])
+            .read_exact(&mut buffer)
+            .unwrap();
+        self.program_counter += 2;
+        let v = u16::from_le_bytes(buffer);
+        Ok(v as u64)
     }
 
     pub fn next_instruction(&mut self) -> Result<InterpreterEvent, InterpreterError> {

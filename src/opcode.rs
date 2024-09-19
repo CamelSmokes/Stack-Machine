@@ -1,7 +1,8 @@
+use std::fmt::Display;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u8)]
 pub enum Opcode {
-    Push = 0,
     Pop = 1,
     Add = 2,
     Sub = 3,
@@ -24,9 +25,17 @@ pub enum Opcode {
     Not = 19,
     Dup3 = 20,
     Dup4 = 21,
+    GotoTarget = 22,
 
     Push0 = 32,
     Push1 = 33,
+    Push2 = 34,
+    Push3 = 35,
+    Push4 = 36,
+    Push5 = 37,
+    Push6 = 38,
+    Push7 = 39,
+    Push8 = 40,
 
     NoOp = 128,
 
@@ -47,7 +56,6 @@ impl Opcode {
     pub fn from_byte(input: u8) -> Option<Opcode> {
         use Opcode::*;
         Some(match input {
-            0 => Push,
             1 => Pop,
             2 => Add,
             3 => Sub,
@@ -69,9 +77,16 @@ impl Opcode {
             19 => Not,
             20 => Dup3,
             21 => Dup4,
-
+            22 => GotoTarget,
             32 => Push0,
             33 => Push1,
+            34 => Push2,
+            35 => Push3,
+            36 => Push4,
+            37 => Push5,
+            38 => Push6,
+            39 => Push7,
+            40 => Push8,
 
             128 => NoOp,
             253 => DbgSilent,
@@ -88,9 +103,15 @@ impl TryInto<Opcode> for &str {
     fn try_into(self) -> Result<Opcode, Self::Error> {
         use Opcode::*;
         Ok(match self {
-            "PUSH" => Push,
             "PUSH0" => Push0,
             "PUSH1" => Push1,
+            "PUSH2" => Push2,
+            "PUSH3" => Push3,
+            "PUSH4" => Push4,
+            "PUSH5" => Push5,
+            "PUSH6" => Push6,
+            "PUSH7" => Push7,
+            "PUSH8" => Push8,
             "POP" => Pop,
             "GOTO" => Goto,
             "ADD" => Add,
@@ -108,6 +129,7 @@ impl TryInto<Opcode> for &str {
             "MLOAD" => MemLoad,
             "MSTORE" => MemStore,
             "GOTONZ" => GotoNz,
+            "GOTOTARGET" => GotoTarget,
             "EQ" => Eq,
             "LT" => Lt,
             "GT" => Gt,
@@ -115,7 +137,52 @@ impl TryInto<Opcode> for &str {
             "NOOP" => NoOp,
             "DEBUG" => Debug,
             "DEBUGCHAR" => DebugChar,
+            "DBGSILENT" => DbgSilent,
             _ => return Err(format!("Unknown Opcode {}", self)),
         })
+    }
+}
+
+impl Display for Opcode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use Opcode::*;
+        let s = match self {
+            Push0 => "PUSH0",
+            Push1 => "PUSH1",
+            Push2 => "PUSH2",
+            Push3 => "PUSH3",
+            Push4 => "PUSH4",
+            Push5 => "PUSH5",
+            Push6 => "PUSH6",
+            Push7 => "PUSH7",
+            Push8 => "PUSH8",
+            Pop => "POP",
+            Goto => "GOTO",
+            Add => "ADD",
+            Sub => "SUB",
+            Mul => "MUL",
+            Div => "DIV",
+            Halt => "HALT",
+            Dup => "DUP",
+            Dup2 => "DUP2",
+            Dup3 => "DUP3",
+            Dup4 => "DUP4",
+            Swap => "SWAP",
+            Swap2 => "SWAP2",
+            Mod => "MOD",
+            MemLoad => "MLOAD",
+            MemStore => "MSTORE",
+            GotoNz => "GOTONZ",
+            Eq => "EQ",
+            Lt => "LT",
+            Gt => "GT",
+            Not => "NOT",
+            NoOp => "NOOP",
+            Debug => "DEBUG",
+            DebugChar => "DEBUGCHAR",
+            GotoTarget => "GOTOTARGET",
+            DbgSilent => "DBGSILENT",
+        };
+        write!(f, "{s}")
     }
 }
