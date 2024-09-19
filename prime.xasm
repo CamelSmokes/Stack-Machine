@@ -25,15 +25,6 @@ DUP
 MLOAD
 // Stack [..., Check Value, Prime list Length, Prime list Index, Prime Value]
 DUP4
-// Stack [...,Check Value, Prime list length, Prime list Index, Prime Value, Check Value]
-DUP2
-DUP2
-// Stack [...,Check Value, Prime list length, Prime list Index, Prime Value, Check Value, Prime Value, Check Value]
-SWAP
-LT
-PUSH 0
-EQ
-GOTONZ :is_prime_return_true // If Prime is greater than or equal to check value return true
 /// Stack [...,Check Value, Prime list length,Prime list Index, Prime Value, Check Value]
 MOD // get remainder when Check Value is divided by a prime
 // Stack [...,Check Value, Prime list length, Prime list Index, Remainder]
